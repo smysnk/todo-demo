@@ -1,0 +1,14 @@
+frontend/src/application.js
+frontend/src/font
+.idea
+
+# NPM / Gulp 
+bower_components
+node_modules
+
+# Working Directories
+frontend/src/js
+frontend/src/css
+
+# Building Directories
+target/

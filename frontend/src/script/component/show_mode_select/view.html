@@ -1,0 +1,4 @@
+<div class="btn-group btn-group-md" role="group">
+    <button type="button" class="btn btn-default" disabled="true"><span class="glyphicon glyphicon-search" aria-hidden="true"></span> Show:</button>
+    <button type="button" class="btn" ng-class="{'btn-primary': mode.selected, 'btn-default': !mode.selected}" ng-repeat="mode in modes.list" ng-click="modes.select(mode)">{{mode.label}}</button>
+</div>

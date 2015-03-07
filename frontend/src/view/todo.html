@@ -1,0 +1,52 @@
+
+<div class="container">
+    <div class="row margin-bottom-25"></div>
+    <div class="jumbotron">
+        <h1>Todo <small>Task management system</small></h1>
+
+        <div class="row margin-bottom-10">
+            <div class="col-xs-6">
+                <show-mode-select mode="todos.showMode" />
+            </div>
+            <div class="col-xs-6">
+                <span class="pull-right">{{todos.countTasksRemaining()}} tasks remaining.</span>
+            </div>
+        </div>
+
+        <div class="row margin-bottom-10">
+            <div class="col-xs-12">
+                <form ng-submit="todos.add()">
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-addon">
+                            <input type="checkbox" disabled="true">
+                        </span>                
+                        <input type="text" class="form-control" ng-model="todos.labelNewTodo" placeholder="What needs to be completed?">                    
+                        <span class="input-group-btn">
+                            <button class="btn btn-warning" type="button" ng-click="todos.add()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+                        </span>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="row margin-bottom-10" ng-repeat="todo in todos.list | filter:todos.showModeFilter">
+            <div class="col-xs-11">
+                <div class="input-group input-group-lg">
+                    <span class="input-group-addon">
+                        <input type="checkbox" ng-model="todo.completed" ng-click="todos.updateCount()">
+                    </span>
+                    <input type="text" class="form-control" ng-model="todo.title" ng-disabled="!todo.enabled">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" type="button" ng-click="todo.edit()"><span class="glyphicon" ng-class="{'glyphicon-pencil': !todo.enabled, 'glyphicon-check': todo.enabled}" aria-hidden="true"></span></button>
+                    </span>
+                </div>
+            </div>
+            <div class="col-xs-1">
+                <div class="btn-group btn-group-lg pull-right" role="group">
+                    <button type="button" class="btn btn-default" ng-click="todos.remove(todo)"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+                </div>
+            </div>            
+        </div>
+
+    </div>
+</div>

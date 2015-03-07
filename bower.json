@@ -1,0 +1,31 @@
+{
+  "name": "todo",
+  "version": "0.0.1",
+  "dependencies": {
+    "angular": "~1.3.4",
+    "angular-ui-router": "*",
+    "jquery": "~2.1.3",
+    "bootstrap": "~3.3.2",
+    "restangular": "~1.4.0",
+    "lodash": "~3.4.0",
+    "almond": "~0.3.1"
+  },
+  "authors": [
+    "Joshua Bellamy-Henn <josh@psidox.com>"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "resolutions": {
+    "jquery": "~2.1.3",
+    "bootstrap": "~3.3.1",
+    "angular": "~1.x",
+    "lodash": "~3.4.0"
+  }
+}
