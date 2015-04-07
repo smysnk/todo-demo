@@ -20,7 +20,7 @@ streamqueue = require 'streamqueue'
 Q = require 'q'
 awspublish = require 'gulp-awspublish'
 wrapamd = require 'gulp-wrap-amd'
-to5 = require 'gulp-6to5'
+babel = require 'gulp-babel'
 templateCache = require 'gulp-angular-templatecache'
  
 # Have to share options between gruntfile + gulpfile due to requirejs issues
@@ -121,7 +121,7 @@ gulp.task 'augment-js', ->
 
 gulp.task 'augment-script', ->
     return gulp.src(["#{source.scriptDir}/**/*.js"])
-        .pipe(to5())
+        .pipe(babel())
         .pipe(gulp.dest(source.jsDir))
         .pipe(gulpif(watching, connect.reload()))
 
