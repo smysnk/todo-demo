@@ -1,7 +1,5 @@
 var gulp = require('gulp');
 var gulpIf = require('gulp-if');
-var replace = require('gulp-replace');
-var rename = require('gulp-rename');
 var gutil = require('gutil');
 var notifier = require('node-notifier');
 
@@ -44,7 +42,7 @@ function standardHandler(err) {
     // Notification
     notifier.notify({ message: 'Error: ' + err.message });
     // Log to console
-    util.log(util.colors.red('Error'), err.message);
+    gutil.log(util.colors.red('Error'), err.message);
     this.emit('end');
 }
 

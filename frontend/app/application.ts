@@ -20,13 +20,13 @@ var app = angular.module('app', [
         $stateProvider
             .state('todo', {
                 url: '/',
-                templateUrl: 'view/todo.html',
+                templateUrl: 'front/todo.html',
                 controller: 'TodoCtrl',
                 controllerAs: 'todos'
             })
             .state('404', {
                 url: "/404",
-                templateUrl: "view/404.html"
+                templateUrl: "common/404.html"
             });
 
     }

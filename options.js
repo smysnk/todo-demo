@@ -24,7 +24,7 @@ source = {
 
 source.file = {
     browserify: {
-        entry: './frontend/app/application.ts'
+        entry: './frontend/app/entry.ts'
     },
     less: {
         entry:  source.dir.base + '/style.less'
@@ -46,11 +46,11 @@ source.glob = {
         source.dir.base + '/bower_components/**/*.eot', 
         source.dir.base + '/bower_components/**/*.svg', 
         source.dir.base + '/bower_components/**/*.ttf', 
-        source.dir.base + '/bower_components/**/*.woff'
+        source.dir.base + '/bower_components/**/*.woff',
+        source.dir.base + '/bower_components/**/*.woff2'
     ],
     html: [
-        source.dir.base + '/module/**/*.html',
-        '!' + source.dir.base + '/bower_components/**'
+        source.dir.app + '/**/*.html'
     ]
 };
 

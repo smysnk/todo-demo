@@ -1,6 +1,6 @@
 
 declare var require:any;
-var app = require('../app');
+var app = require('../application');
 
 class Todo {
 

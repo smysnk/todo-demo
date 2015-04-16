@@ -1,7 +1,7 @@
 'use strict';
 
 declare var require:any;
-var app = require('../app');
+var app = require('../application');
 
 class TodoCtrl {
 
@@ -28,8 +28,6 @@ class TodoCtrl {
         this.showMode = $todo.showMode;
         this.countTasksRemaining = $todo.countTasksRemaining;
         this.remove = $todo.remove;
-
-        console.log('boom');
 
     }
 

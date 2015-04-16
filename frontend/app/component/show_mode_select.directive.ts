@@ -1,6 +1,6 @@
 "use strict";
 declare var require:any;
-var app = require('../../app');
+var app = require('../application');
 
 /**
  * Base class representation of Filter Mode
@@ -130,7 +130,7 @@ app.directive('showModeSelect', function () {
         scope: {
             mode: '='
         },
-        templateUrl: 'script/component/show_mode_select/view.html',
+        templateUrl: 'component/show_mode_select.html',
         controllerAs: 'modes',
         controller: ShowModeSelectCtrl
     };
