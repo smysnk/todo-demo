@@ -146,7 +146,6 @@ gulp.task('augment-less', function() {
         .pipe(sourceMaps.init())
         .pipe(less({
             paths: [path.join(__dirname, 'less', 'includes')],
-            // plugins: [ cleancss ]
         }))
             .on('error', standardHandler)
         .pipe(minifyCSS())
