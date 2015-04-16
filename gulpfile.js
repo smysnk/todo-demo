@@ -1,20 +1,23 @@
 var gulp = require('gulp');
-var gulpif = require('gulp-if');
-var less = require('gulp-less');
+var gulpIf = require('gulp-if');
 var replace = require('gulp-replace');
 var rename = require('gulp-rename');
-var sourceMaps = require('gulp-sourcemaps');
 var gutil = require('gutil');
 var notifier = require('node-notifier');
+
+var sourceMaps = require('gulp-sourcemaps');
 var sourceStream = require('vinyl-source-stream');
+var buffer = require('vinyl-buffer');
+var uglify = require('gulp-uglify');
+
+var less = require('gulp-less');
+var minifyCSS = require('gulp-minify-css');
+
 var templateCache = require('gulp-angular-templatecache');
-var exorcist = require('exorcist');
 
 var es = require('event-stream');
 var path = require('path');
-var watchify = require('watchify');
 var browserify = require('browserify');
-var tsify = require('tsify');
 var util = require('gulp-util');
 
 var runSequence = require('run-sequence');
@@ -30,7 +33,6 @@ var watching = false;
 var options = require('./options');
 var settings = options.settings;
 var source = options.source;
-var cordova = options.cordova;
 var target = options.target;
 var alpha = options.alpha;
 var beta = options.beta;
@@ -49,22 +51,25 @@ function standardHandler(err) {
 function bundle() {
 
     var bundler = browserify({ debug: true })
-        .add('./src/script/main.ts')
+        .add(source.file.browserify.entry)
         .plugin('tsify', { 
             //noImplicitAny: true 
-        });
-        //.plugin('minifyify', { map: 'bundle.map.json', output: alpha.baseDir + "/bundle.map.json" });
-
-    bundler.on('update', bundle); // on any dep update, runs the bundler
-    bundler.on('log', gutil.log); // output build logs to terminal
-
-    return bundler.bundle()
-        // log errors if they happen
-        .on('error', standardHandler)
-        .pipe(exorcist(alpha.baseDir + '/application.js.map'))
-        .pipe(sourceStream('application.js'))
-        .pipe(gulp.dest(alpha.baseDir))
-        .pipe(gulpif(watching, connect.reload()));
+        })
+        .on('update', bundle) // on any dep update, runs the bundler
+        .on('log', gutil.log); // output build logs to terminal
+    
+    return bundler
+        .bundle()
+            .on('error', standardHandler)
+        .pipe(sourceStream(alpha.file.browserify.output))
+        .pipe(buffer())
+        .pipe(sourceMaps.init({ loadMaps: true }))
+        // Add transformation tasks to the pipeline here.
+        .pipe(uglify())
+            .on('error', standardHandler)
+        .pipe(sourceMaps.write('./map'))
+        .pipe(gulp.dest(alpha.dir.base))
+        .pipe(gulpIf(watching, connect.reload()));
 
 }
 
@@ -73,102 +78,113 @@ gulp.task('default', function (cb) {
     watching = true;
     return runSequence(['clean'], ['augment'], ['connect', 'watch'], cb);
 
-}); // ['clean'], ['augment', 'watch', 'connect']);
+});
 
 gulp.task('clean', function (cb) {
-    return del(target.baseDir, cb);
+    
+    return del(target.dir.base, cb);
+
 });
 
 gulp.task('watch', function () {
 
     watching = true;
     
-    gulp.watch(source.lessDir + "/**/*.*", ['augment-less']);
-    gulp.watch(source.scriptDir + "/**/*.*", ['augment-script']);
-    gulp.watch(source.baseDir + "/index.html", ['augment-html-index']);
-    gulp.watch(source.baseDir + "/view/**/*.html", ['augment-script']);
-
-    return gulp.watch([
-        source.baseDir + "/bower_components/**/*.eot", 
-        source.baseDir + "/bower_components/**/*.svg", 
-        source.baseDir + "/bower_components/**/*.ttf", 
-        source.baseDir + "/bower_components/**/*.woff"
-    ], ['augment-font']);
-
+    gulp.watch(source.glob.copy, ['copy']);
+    gulp.watch(source.glob.font, ['augment-font']);
+    gulp.watch(source.glob.less, ['augment-less']);
+    gulp.watch(source.glob.script, ['augment-script']);
+    return gulp.watch(source.glob.html, ['augment-script']); // Call script because 'augment-html' is a dependency
+    
 });
 
-gulp.task('augment', ['augment-html-index', 'augment-html', 'augment-font', 'augment-script', 'augment-less']);
+gulp.task('augment', ['copy', 'augment-html', 'augment-font', 'augment-script', 'augment-less']);
 
-gulp.task('augment-script', ['augment-html'], bundle);
+gulp.task('copy', function () {
 
-gulp.task('augment-html-index', function () {
-    return gulp.src([source.baseDir + "/index.html"])
-        .pipe(gulp.dest(alpha.baseDir))
-        .pipe(gulpif(watching, connect.reload()));
+    return gulp
+        .src(source.glob.copy, { base: source.dir.base })
+        .pipe(gulp.dest(alpha.dir.base))
+        .pipe(gulpIf(watching, connect.reload()));
+
 });
 
 gulp.task('augment-html', function () {
-    return gulp.src([ source.baseDir + "/**/*.html", '!' + source.baseDir + '/bower_components/**' ])
+
+    return gulp
+        .src(source.glob.html)
         .pipe(templateCache({
             filename: 'templates.js',
             templateHeader: 'angular.module("<%= module %>"<%= standalone %>).run(["$templateCache", function($templateCache) {',
             standalone: true
         }))
-        .pipe(gulp.dest(source.scriptDir))
-        .pipe(gulpif(watching, connect.reload()));
+        .pipe(gulp.dest(source.dir.app))
+        .pipe(gulpIf(watching, connect.reload()));
+
 });
 
 gulp.task('augment-font', function () {
-    return gulp.src([
-        source.baseDir + "/bower_components/**/*.eot", 
-        source.baseDir + "/bower_components/**/*.svg", 
-        source.baseDir + "/bower_components/**/*.ttf", 
-        source.baseDir + "/bower_components/**/*.woff", 
-        source.baseDir + "/bower_components/**/*.woff2"])
-    .pipe(es.map(function(file, callback) {
-        file.path = file.base + file.path.replace(/^.*\//i, "");
-        return callback(null, file);
-    }))
-    .pipe(gulp.dest(alpha.fontDir))
-    .pipe(gulpif(watching, connect.reload()));
+
+    return gulp
+        .src(source.glob.font)
+        .pipe(es.map(function(file, callback) { // Rebase files from random bower directories
+            file.path = file.base + file.path.replace(/^.*\//i, ''); 
+            return callback(null, file);
+        }))
+        .pipe(gulp.dest(alpha.dir.font))
+        .pipe(gulpIf(watching, connect.reload()));
+
 });
 
+
+gulp.task('augment-script', ['augment-html'], bundle);
+
 gulp.task('augment-less', function() {
-    return gulp.src(source.lessDir + "/style.less").pipe(less({
-        paths: [path.join(__dirname, 'less', 'includes')]
-    }))
-    .pipe(gulp.dest(alpha.cssDir))
-    .pipe(gulpif(watching, connect.reload()));
+
+    return gulp
+        .src(source.file.less.entry)
+        .pipe(sourceMaps.init())
+        .pipe(less({
+            paths: [path.join(__dirname, 'less', 'includes')],
+            // plugins: [ cleancss ]
+        }))
+            .on('error', standardHandler)
+        .pipe(minifyCSS())
+        .pipe(sourceMaps.write('./map'))
+        .pipe(gulp.dest(alpha.dir.base))
+        .pipe(gulpIf(watching, connect.reload()));
+
 });
 
 
 gulp.task('connect', function () {
+
     return connect.server({
-        root: [alpha.baseDir],
+        root: [alpha.dir.base],
         port: settings.port,
         livereload: true,
         middleware: function (connect, o) {
             return [
                 (function () {
                     var proxy, url;
-                    url = require("url");
-                    proxy = require("proxy-middleware");
-                    options = url.parse("http://localhost:8080/service/api");
-                    options.route = "/api";
+                    url = require('url');
+                    proxy = require('proxy-middleware');
+                    options = url.parse('http://localhost:8080/service/api');
+                    options.route = '/api';
                     return proxy(options);
                 })(), 
                 (function () {
                     var proxy, url;
-                    url = require("url");
-                    proxy = require("proxy-middleware");
-                    options = url.parse("http://localhost:8080/service/images");
-                    options.route = "/images";
+                    url = require('url');
+                    proxy = require('proxy-middleware');
+                    options = url.parse('http://localhost:8080/service/images');
+                    options.route = '/images';
                     return proxy(options);
                 })(), 
                 historyApiFallback
             ];
         }
     });
-});
 
+});
 
