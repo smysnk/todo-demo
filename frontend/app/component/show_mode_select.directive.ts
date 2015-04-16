@@ -1,6 +1,5 @@
-"use strict";
 declare var require:any;
-var app = require('../application');
+import app = require('../application');
 
 /**
  * Base class representation of Filter Mode

@@ -1,5 +1,3 @@
-'use strict';
-
 declare var require:any;
 var app = require('../application');
 
@@ -42,14 +40,6 @@ class TodoCtrl {
 
     }
 
-    /**
-     * Deligate filter logic to current Show Mode object
-     */
-    showModeFilter(input) {
-
-        return this.$todo.showMode.selected.filter(input);
-
-    }
 
 
 };
