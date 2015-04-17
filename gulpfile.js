@@ -116,8 +116,7 @@ gulp.task('augment-html', function () {
             templateHeader: 'angular.module("<%= module %>"<%= standalone %>).run(["$templateCache", function($templateCache) {',
             standalone: true
         }))
-        .pipe(gulp.dest(source.dir.app))
-        .pipe(gulpIf(watching, connect.reload()));
+        .pipe(gulp.dest(source.dir.app));
 
 });
 
